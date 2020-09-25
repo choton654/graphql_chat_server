@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
+import requireAuth from '../middleware/permission';
 import Message from '../models/message';
-
 module.exports = {
   Query: {
     messages: (_, __, { req }, ___) => {
@@ -16,19 +16,21 @@ module.exports = {
   },
 
   Mutation: {
-    createMessage: async (root, args, { pubSub }, info) => {
-      try {
-        const message = await Message.create(args);
-        // pubSub.publish('NEW POST', {
-        //   newMessage: message,
-        // });
-        console.log(message);
-        return true;
-      } catch (error) {
-        console.error(error);
-        return false;
-      }
-    },
+    createMessage: requireAuth.createResolver(
+      async (root, args, { user, pubSub }, info) => {
+        try {
+          const message = await Message.create({
+            text: args.text,
+            userId: user._id,
+          });
+          console.log(message);
+          return true;
+        } catch (error) {
+          console.error(error);
+          return false;
+        }
+      },
+    ),
   },
 
   Subscription: {

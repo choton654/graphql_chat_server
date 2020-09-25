@@ -2,13 +2,21 @@ import jwt from 'jsonwebtoken';
 import User from '../models/user';
 
 export const createTokens = async (user, refreshSecret) => {
-  const createToken = jwt.sign({ id: user._id }, process.env.SECRET, {
-    expiresIn: '1hr',
-  });
+  const createToken = jwt.sign(
+    { id: user._id, username: user.username },
+    process.env.SECRET,
+    {
+      expiresIn: '1hr',
+    },
+  );
 
-  const createRefreshtoken = jwt.sign({ id: user._id }, refreshSecret, {
-    expiresIn: '7d',
-  });
+  const createRefreshtoken = jwt.sign(
+    { id: user._id, username: user.username },
+    refreshSecret,
+    {
+      expiresIn: '7d',
+    },
+  );
 
   return [createToken, createRefreshtoken];
 };
@@ -52,17 +60,13 @@ export const refreshtokens = async (token, refreshtoken) => {
 
 export const auth = async (req, res, next) => {
   const token = req.headers.token ? req.headers.token : '';
-  console.log('token', token);
+  // console.log('token', token);
   if (token) {
     try {
-      jwt.verify(token, process.env.SECRET, (err, decode) => {
-        if (err) {
-          console.error(err);
-        }
-        console.log(decode);
-        req.userId = decode.id;
-      });
+      const decode = jwt.verify(token, process.env.SECRET);
+      req.userId = decode.id;
     } catch (error) {
+      console.log(error);
       const refreshtoken = req.headers.refreshtoken
         ? req.headers.refreshtoken
         : '';

@@ -3,7 +3,6 @@ import mongoose from 'mongoose';
 const channelSchema = new mongoose.Schema({
   name: {
     type: String,
-    unique: true,
   },
   teamId: {
     type: mongoose.Schema.Types.ObjectId,

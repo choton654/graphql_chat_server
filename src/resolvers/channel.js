@@ -1,10 +1,10 @@
 import Channel from '../models/channel';
 
 module.exports = {
-  // Query: {
-  //   channels: () => Channel.find({}),
-  //   channel: (_, __, { id }) => Channel.findById(id),
-  // },
+  Query: {
+    channels: () => Channel.find({}),
+    channel: (_, __, { id }) => Channel.findById(id),
+  },
 
   Mutation: {
     createChannel: async (root, args, context, info) => {

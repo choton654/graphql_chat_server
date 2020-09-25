@@ -36,7 +36,7 @@ const server = new ApolloServer({
   resolvers,
   context: async ({ req, res }) => {
     const user = await User.findById(req.userId);
-    console.log('user', user);
+    // console.log('user', user);
     req.user = user;
     return { req, res, pubSub };
   },
