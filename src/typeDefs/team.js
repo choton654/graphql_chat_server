@@ -6,7 +6,11 @@ const typeDefs = gql`
     teams: [Team!]!
   }
   extend type Mutation {
-    createTeam(name: String!): Boolean!
+    createTeam(name: String!): TeamResponse
+  }
+  type TeamResponse {
+    ok: Boolean!
+    error: Error
   }
   type Team {
     id: ID!

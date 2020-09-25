@@ -19,10 +19,15 @@ module.exports = {
     createTeam: async (root, args, { pubSub }, info) => {
       try {
         const team = await Team.create(args);
-        return true;
+        return {
+          ok: true,
+        };
       } catch (error) {
         console.error(error);
-        return false;
+        return {
+          ok: false,
+          error: { error: 'Team already exists' },
+        };
       }
       // pubSub.publish(NEW_TEAM, {
       //   newTeam: team,

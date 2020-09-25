@@ -3,6 +3,8 @@ import cookieParser from 'cookie-parser';
 import express from 'express';
 import http from 'http';
 import mongoose from 'mongoose';
+import { auth } from './middleware/authMiddleware';
+import User from './models/user';
 import resolvers from './resolvers';
 import typeDefs from './typeDefs';
 require('dotenv').config();
@@ -23,16 +25,7 @@ const IN_PROD = NODE_ENV === 'production';
 const app = express();
 app.use(cookieParser());
 
-// app.use((req, res, next) => {
-//   const token = req.cookies['token'];
-//   console.log(token);
-//   next();
-// });
-
-// app.get('/hello', (req, res) => {
-//   res.cookie('token', { user: 'john' });
-//   res.end('hello');
-// });
+app.use(auth);
 
 app.disable('x-powered-by');
 
@@ -41,7 +34,12 @@ const pubSub = new PubSub();
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  context: ({ req, res }) => ({ req, res, pubSub }),
+  context: async ({ req, res }) => {
+    const user = await User.findById(req.userId);
+    console.log('user', user);
+    req.user = user;
+    return { req, res, pubSub };
+  },
   playground: !IN_PROD,
 });
 server.applyMiddleware({ app });

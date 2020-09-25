@@ -31,12 +31,13 @@ userSchema.pre('save', async function (next) {
   try {
     const salt = await bcrypt.genSalt();
     this.password = await bcrypt.hash(this.password, salt);
+    // console.log(this.password);
     next();
   } catch (error) {
     next(error);
   }
 });
 
-const User = mongoose.model('user', userSchema);
+const User = mongoose.models.user || mongoose.model('user', userSchema);
 
 module.exports = User;
