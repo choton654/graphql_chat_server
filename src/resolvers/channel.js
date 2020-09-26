@@ -7,15 +7,28 @@ module.exports = {
   },
 
   Mutation: {
-    createChannel: async (root, args, context, info) => {
-      console.log(args);
+    createChannel: async (root, args, { req }, info) => {
+      console.log(req.user);
+
       try {
-        const channel = await Channel.create(args);
-        console.log(channel);
-        return true;
+        if (req.user !== null) {
+          const channel = await Channel.create(args);
+          console.log(channel);
+          return {
+            ok: true,
+            channel,
+          };
+        } else {
+          return {
+            ok: false,
+          };
+        }
       } catch (error) {
         console.error(error);
-        return false;
+        return {
+          ok: false,
+          error: error.message,
+        };
       }
     },
   },

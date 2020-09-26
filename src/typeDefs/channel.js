@@ -7,9 +7,13 @@ const typeDefs = gql`
   }
 
   extend type Mutation {
-    createChannel(teamId: ID!, name: String!, public: Boolean): Boolean!
+    createChannel(teamId: ID!, name: String!, public: Boolean): ChannelResponse!
   }
-
+  type ChannelResponse {
+    ok: Boolean!
+    error: Error
+    channel: Channel
+  }
   type Channel {
     id: ID!
     name: String!
