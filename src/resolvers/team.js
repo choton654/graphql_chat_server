@@ -7,10 +7,22 @@ import User from '../models/user';
 
 module.exports = {
   Query: {
-    allTeams: () => Team.find({}),
-    inviteTeams: (_, __, { req }) => {
+    allTeams: (_, __, { req }) => Team.find({ owner: req.user._id }),
+    inviteTeams: async (_, __, { req }) => {
       console.log(req.user);
-      return Team.find({ owner: req.user._id });
+      try {
+        let teams;
+        const members = await Member.find({ userId: req.user._id });
+        console.log(members);
+        members.map((member) => {
+          teams = Team.find({ _id: member.teamId });
+          console.log(teams);
+          return teams;
+        });
+        return teams;
+      } catch (error) {
+        console.error(error);
+      }
     },
     team: (root, { id }, context, info) => {
       if (!mongoose.Types.ObjectId.isValid(id)) {

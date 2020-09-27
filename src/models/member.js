@@ -1,13 +1,11 @@
 import mongoose from 'mongoose';
 
 const memberSchema = new mongoose.Schema({
-  userId: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'user',
-      required: true,
-    },
-  ],
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'user',
+    required: true,
+  },
   teamId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'team',

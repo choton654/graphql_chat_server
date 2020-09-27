@@ -4,7 +4,7 @@ const typeDefs = gql`
   extend type Query {
     team(id: ID!): Team!
     allTeams: [Team!]!
-    inviteTeams: [Team!]!
+    inviteTeams: [Team!]
   }
   extend type Mutation {
     createTeam(name: String!): TeamResponse!
@@ -22,7 +22,7 @@ const typeDefs = gql`
   type Team {
     id: ID!
     name: String!
-    owner: User!
+    owner: ID!
     members: [User!]!
     channels: [Channel!]!
   }

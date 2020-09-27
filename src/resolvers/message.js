@@ -3,9 +3,9 @@ import requireAuth from '../middleware/permission';
 import Message from '../models/message';
 module.exports = {
   Query: {
-    messages: (_, __, { req }, ___) => {
+    messages: (_, { channelId }, { req }, ___) => {
       console.log(req.user);
-      return Message.find({});
+      return Message.find({ channelId });
     },
     message: (root, { id }, context, info) => {
       if (!mongoose.Types.ObjectId.isValid(id)) {

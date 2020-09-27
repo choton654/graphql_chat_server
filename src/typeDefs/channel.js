@@ -14,6 +14,7 @@ const typeDefs = gql`
     error: Error
     channel: Channel
   }
+
   type Channel {
     id: ID!
     name: String!

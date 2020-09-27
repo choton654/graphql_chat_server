@@ -1,16 +1,19 @@
 import mongoose from 'mongoose';
 
-const messageSchema = new mongoose.Schema({
-  text: String,
-  channelId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'channel',
+const messageSchema = new mongoose.Schema(
+  {
+    text: String,
+    channelId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'channel',
+    },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'user',
+    },
   },
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'user',
-  },
-});
+  { timestamps: true },
+);
 
 const Message = mongoose.model('message', messageSchema);
 
