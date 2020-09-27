@@ -17,12 +17,6 @@ const userSchema = new mongoose.Schema(
         ref: 'channel',
       },
     ],
-    member: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'team',
-      },
-    ],
   },
   { timestamps: true },
 );

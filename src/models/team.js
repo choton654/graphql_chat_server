@@ -5,12 +5,6 @@ const teamSchema = new mongoose.Schema({
     type: String,
     unique: true,
   },
-  member: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'user',
-    },
-  ],
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'user',

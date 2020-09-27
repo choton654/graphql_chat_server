@@ -1,11 +1,17 @@
 import mongoose from 'mongoose';
 import requireAuth from '../middleware/permission';
 import Channel from '../models/channel';
+import Member from '../models/member';
 import Team from '../models/team';
+import User from '../models/user';
 
 module.exports = {
   Query: {
     allTeams: () => Team.find({}),
+    inviteTeams: (_, __, { req }) => {
+      console.log(req.user);
+      return Team.find({ owner: req.user._id });
+    },
     team: (root, { id }, context, info) => {
       if (!mongoose.Types.ObjectId.isValid(id)) {
         throw Error('Team is not exists');
@@ -15,6 +21,46 @@ module.exports = {
     },
   },
   Mutation: {
+    addTeamMember: requireAuth.createResolver(
+      async (root, { email, teamId }, { req, pubSub }, info) => {
+        try {
+          const userToAddPromise = User.findOne({ email });
+          const teamPromise = Team.findById(teamId);
+          const [team, userToAdd] = await Promise.all([
+            teamPromise,
+            userToAddPromise,
+          ]);
+          if (team.owner.toString() !== req.user._id.toString()) {
+            return {
+              ok: false,
+              error: { error: 'You cannot add members to the team' },
+            };
+          }
+          if (!userToAdd) {
+            return {
+              ok: false,
+              error: { error: 'Could not find user with this email' },
+            };
+          }
+          if (!teamPromise) {
+            return {
+              ok: false,
+              error: { error: 'Select team to add people' },
+            };
+          }
+          await Member.create({ userId: userToAdd._id, teamId });
+          return {
+            ok: true,
+          };
+        } catch (error) {
+          console.error(error);
+          return {
+            ok: false,
+            error: { error: error.message },
+          };
+        }
+      },
+    ),
     createTeam: requireAuth.createResolver(
       async (root, args, { req, pubSub }, info) => {
         try {
@@ -34,10 +80,12 @@ module.exports = {
           };
         } catch (error) {
           console.error(error);
-          return {
-            ok: false,
-            error: { error: 'Team already exists' },
-          };
+          if (error.code === 11000) {
+            return {
+              ok: false,
+              error: { error: 'Team already exists' },
+            };
+          }
         }
       },
     ),
