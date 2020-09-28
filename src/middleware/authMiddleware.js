@@ -67,15 +67,15 @@ export const auth = async (req, res, next) => {
       req.userId = decode.id;
     } catch (error) {
       console.log(error);
-      const refreshtoken = req.headers.refreshtoken
-        ? req.headers.refreshtoken
-        : '';
-      const newTokens = await refreshtokens(token, refreshtoken);
-      if (newTokens.token && newTokens.refreshToken) {
-        res.setHeader('token', newTokens.token);
-        res.setHeader('refreshtoken', newTokens.refreshToken);
-      }
-      req.userId = newTokens.user._id;
+      // const refreshtoken = req.headers.refreshtoken
+      //   ? req.headers.refreshtoken
+      //   : '';
+      // const newTokens = await refreshtokens(token, refreshtoken);
+      // if (newTokens.token && newTokens.refreshToken) {
+      //   res.setHeader('token', newTokens.token);
+      //   res.setHeader('refreshtoken', newTokens.refreshToken);
+      // }
+      // req.userId = newTokens.user._id;
     }
   }
   next();
