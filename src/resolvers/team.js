@@ -22,7 +22,8 @@ module.exports = {
       try {
         let teams;
         const members = await Member.find({ userId: req.user._id });
-        // console.log(members);
+
+        console.log(members);
         members.map((member) => {
           teams = Team.find({ _id: member.teamId });
           console.log(teams);
@@ -98,7 +99,7 @@ module.exports = {
         try {
           const team = await Team.create({
             name: args.name,
-            // owner: req.user._id,
+            owner: req.user._id,
           });
           // pubSub.publish(NEW_TEAM, {
           //   newTeam: team,

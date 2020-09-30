@@ -18,14 +18,18 @@ module.exports = {
   User: {
     teams: async (root, args, { req }, info) => {
       try {
-        let teams;
+        let teams = [];
+        const userTeams = await Team.find({ owner: req.user._id });
         const members = await Member.find({ userId: req.user._id });
-        // console.log(members);
-        members.map((member) => {
-          teams = Team.find({ _id: member.teamId });
-          console.log(teams);
-          return teams;
-        });
+
+        const teamIds = members.map((mm) => mm.teamId);
+
+        const memberTeams = await Team.find({ _id: [...teamIds] });
+
+        teams = [...userTeams, ...memberTeams];
+
+        console.log(teams);
+
         return teams;
       } catch (error) {
         console.error(error);
@@ -34,14 +38,10 @@ module.exports = {
   },
   Query: {
     allUsers: (root, args, { req, res, pubSub }, info) => {
-      // console.log('req user', req.user);
       return User.find({});
     },
     me: requireAuth.createResolver(
       async (root, { id }, { req, pubsub }, info) => {
-        // if (!mongoose.Types.ObjectId.isValid(req.user._id)) {
-        //   return UserInputError(`${id} is not exists`);
-        // }
         return await User.findById(req.user._id);
       },
     ),
