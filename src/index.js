@@ -2,11 +2,12 @@ import { ApolloServer, PubSub } from 'apollo-server-express';
 import cookieParser from 'cookie-parser';
 import express from 'express';
 import http from 'http';
+import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
-import { auth } from './middleware/authMiddleware';
-import User from './models/user';
+import { auth, refreshtokens } from './middleware/authMiddleware';
 import resolvers from './resolvers';
 import typeDefs from './typeDefs';
+
 require('dotenv').config();
 
 mongoose.connect(process.env.MONGO_URI, {
@@ -34,11 +35,35 @@ const pubSub = new PubSub();
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  context: async ({ req, res }) => {
-    const user = await User.findById(req.userId);
-    // console.log('user', user);
-    req.user = user;
-    return { req, res, pubSub };
+  context: async ({ req, res }) => ({ req, res }),
+  subscriptions: {
+    onConnect: async ({ token, refreshToken }, webSocket) => {
+      // console.log('connection', token, refreshToken);
+      if (token && refreshToken) {
+        let user = null;
+        try {
+          const payload = jwt.verify(token, process.env.SECRET);
+          user = payload.user;
+        } catch (error) {
+          const newTokens = await refreshtokens(token, refreshToken);
+          user = newTokens.user;
+        }
+        if (!user) {
+          throw new Error('Invalid auth tokens');
+        }
+        console.log('subuser', user);
+        // const member = await Member.findOne({
+        //   teamId: user._id,
+        // });
+
+        // if (!member) {
+        //   throw new Error('Missing auth tokens!');
+        // }
+
+        return true;
+      }
+      throw new Error('Missing auth tokens');
+    },
   },
   playground: !IN_PROD,
 });

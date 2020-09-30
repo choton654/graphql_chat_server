@@ -2,7 +2,7 @@ const { gql } = require('apollo-server-express');
 
 module.exports = gql`
   extend type Query {
-    getUser(id: ID!): User
+    me: User!
     allUsers: [User!]!
   }
   extend type Mutation {

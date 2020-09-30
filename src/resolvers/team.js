@@ -5,15 +5,24 @@ import Member from '../models/member';
 import Team from '../models/team';
 import User from '../models/user';
 
+const NEW_TEAM = 'NEW TEAM';
+
 module.exports = {
   Query: {
-    allTeams: (_, __, { req }) => Team.find({ owner: req.user._id }),
+    allTeams: async (_, __, { req }) => {
+      try {
+        const teams = await Team.find({ owner: req.user._id });
+        return teams;
+      } catch (error) {
+        console.error(error);
+      }
+    },
     inviteTeams: async (_, __, { req }) => {
-      console.log(req.user);
+      // console.log(req.user);
       try {
         let teams;
         const members = await Member.find({ userId: req.user._id });
-        console.log(members);
+        // console.log(members);
         members.map((member) => {
           teams = Team.find({ _id: member.teamId });
           console.log(teams);
@@ -37,12 +46,17 @@ module.exports = {
       async (root, { email, teamId }, { req, pubSub }, info) => {
         try {
           const userToAddPromise = User.findOne({ email });
+          const memberToPromise = Member.findOne({
+            teamId,
+            userId: req.user._id,
+          });
           const teamPromise = Team.findById(teamId);
-          const [team, userToAdd] = await Promise.all([
-            teamPromise,
+          const [member, userToAdd] = await Promise.all([
+            // teamPromise,
+            memberToPromise,
             userToAddPromise,
           ]);
-          if (team.owner.toString() !== req.user._id.toString()) {
+          if (!member.admin) {
             return {
               ok: false,
               error: { error: 'You cannot add members to the team' },
@@ -54,12 +68,18 @@ module.exports = {
               error: { error: 'Could not find user with this email' },
             };
           }
-          if (!teamPromise) {
-            return {
-              ok: false,
-              error: { error: 'Select team to add people' },
-            };
-          }
+          // if (team.owner.toString() !== req.user._id.toString()) {
+          //   return {
+          //     ok: false,
+          //     error: { error: 'You cannot add members to the team' },
+          //   };
+          // }
+          // if (!teamPromise) {
+          //   return {
+          //     ok: false,
+          //     error: { error: 'Select team to add people' },
+          //   };
+          // }
           await Member.create({ userId: userToAdd._id, teamId });
           return {
             ok: true,
@@ -78,11 +98,19 @@ module.exports = {
         try {
           const team = await Team.create({
             name: args.name,
-            owner: req.user._id,
+            // owner: req.user._id,
           });
-          console.log('team', team);
+          // pubSub.publish(NEW_TEAM, {
+          //   newTeam: team,
+          // });
+          // console.log('team', team);
+          await Member.create({
+            userId: req.user._id,
+            teamId: team._id,
+            admin: true,
+          });
           await Channel.create({
-            name: `${team.name}-general`,
+            name: `general`,
             teamId: team._id,
             public: true,
           });
@@ -105,23 +133,11 @@ module.exports = {
   Team: {
     channels: ({ id }, args, context, info) => Channel.find({ teamId: id }),
   },
+  Subscription: {
+    newTeam: {
+      subscribe: (root, args, { pubSub }, info) => {
+        return pubSub.asyncIterator(NEW_TEAM);
+      },
+    },
+  },
 };
-
-// const NEW_TEAM = 'NEW TEAM';
-// pubSub.publish(NEW_TEAM, {
-//   newTeam: team,
-// });
-// Subscription: {
-//   newTeam: {
-//     subscribe: (root, args, { pubsub }, info) => {
-//       return pubsub.asyncIterator(NEW_TEAM);
-//     },
-//   },
-// },
-// if (req.user !== null) {
-// } else {
-//   return {
-//     ok: false,
-//     error: { error: 'User must be sign in' },
-//   };
-// }

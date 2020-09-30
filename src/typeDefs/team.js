@@ -10,6 +10,9 @@ const typeDefs = gql`
     createTeam(name: String!): TeamResponse!
     addTeamMember(email: String!, teamId: ID!): VoidResponse!
   }
+  extend type Subscription {
+    newTeam: Team!
+  }
   type VoidResponse {
     ok: Boolean!
     error: Error
@@ -22,7 +25,7 @@ const typeDefs = gql`
   type Team {
     id: ID!
     name: String!
-    owner: ID!
+    admin: Boolean
     members: [User!]!
     channels: [Channel!]!
   }

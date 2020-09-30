@@ -9,7 +9,7 @@ const typeDefs = gql`
     createMessage(channelId: ID!, text: String!): Boolean!
   }
   extend type Subscription {
-    newMessage: Message!
+    newMessage(channelId: ID!): Message!
   }
   type Message {
     id: ID!

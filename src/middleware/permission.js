@@ -14,11 +14,7 @@ const createResolver = (resolver) => {
 export default createResolver((parent, args, { req }) => {
   console.log(req.user);
 
-  if (!req.user || !req.user.id) {
+  if (!req.user || !req.user._id) {
     throw new Error('Not authenticated');
-    // return {
-    //   ok: false,
-    //   error: { error: 'Not authenticated' },
-    // };
   }
 });

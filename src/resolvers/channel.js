@@ -11,10 +11,10 @@ module.exports = {
   Mutation: {
     createChannel: requireAuth.createResolver(
       async (root, args, { req }, info) => {
-        console.log(req.user);
+        // console.log(req.user);
         try {
           const team = await Team.findOne({ _id: args.teamId });
-          console.log('team', team);
+          // console.log('team', team);
           if (team.owner !== req.user._id) {
             return {
               ok: false,
@@ -22,17 +22,11 @@ module.exports = {
             };
           }
           const channel = await Channel.create(args);
-          console.log(channel);
+          // console.log(channel);
           return {
             ok: true,
             channel,
           };
-          // if (req.user !== null) {
-          // } else {
-          //   return {
-          //     ok: false,
-          //   };
-          // }
         } catch (error) {
           console.error(error);
           return {

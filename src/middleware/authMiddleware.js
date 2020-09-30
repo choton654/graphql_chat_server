@@ -2,21 +2,13 @@ import jwt from 'jsonwebtoken';
 import User from '../models/user';
 
 export const createTokens = async (user, refreshSecret) => {
-  const createToken = jwt.sign(
-    { id: user._id, username: user.username },
-    process.env.SECRET,
-    {
-      expiresIn: '1hr',
-    },
-  );
+  const createToken = jwt.sign({ user }, process.env.SECRET, {
+    expiresIn: '1hr',
+  });
 
-  const createRefreshtoken = jwt.sign(
-    { id: user._id, username: user.username },
-    refreshSecret,
-    {
-      expiresIn: '7d',
-    },
-  );
+  const createRefreshtoken = jwt.sign({ user }, refreshSecret, {
+    expiresIn: '7d',
+  });
 
   return [createToken, createRefreshtoken];
 };
@@ -59,23 +51,21 @@ export const refreshtokens = async (token, refreshtoken) => {
 };
 
 export const auth = async (req, res, next) => {
-  const token = req.headers.token ? req.headers.token : '';
-  // console.log('token', token);
+  const token = req.headers['x-token'];
   if (token) {
     try {
-      const decode = jwt.verify(token, process.env.SECRET);
-      req.userId = decode.id;
+      const { user } = jwt.verify(token, process.env.SECRET);
+      req.user = user;
     } catch (error) {
       console.log(error);
-      // const refreshtoken = req.headers.refreshtoken
-      //   ? req.headers.refreshtoken
-      //   : '';
-      // const newTokens = await refreshtokens(token, refreshtoken);
-      // if (newTokens.token && newTokens.refreshToken) {
-      //   res.setHeader('token', newTokens.token);
-      //   res.setHeader('refreshtoken', newTokens.refreshToken);
-      // }
-      // req.userId = newTokens.user._id;
+      const refreshtoken = req.headers['x-refresh-token'];
+      const newTokens = await refreshtokens(token, refreshtoken);
+      if (newTokens.token && newTokens.refreshToken) {
+        res.set('Access-Control-Expose-Headers', 'x-token, x-refresh-token');
+        res.set('x-token', newTokens.token);
+        res.set('x-refresh-token', newTokens.refreshToken);
+      }
+      req.user = newTokens.user;
     }
   }
   next();

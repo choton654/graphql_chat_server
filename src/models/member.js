@@ -1,6 +1,10 @@
 import mongoose from 'mongoose';
 
 const memberSchema = new mongoose.Schema({
+  admin: {
+    type: Boolean,
+    default: false,
+  },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'user',
