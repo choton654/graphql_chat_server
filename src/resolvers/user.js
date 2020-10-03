@@ -19,14 +19,14 @@ module.exports = {
     teams: async (root, args, { req }, info) => {
       try {
         let teams = [];
-        const userTeams = await Team.find({ owner: req.user._id });
+        // const userTeams = await Team.find({ owner: req.user._id });
         const members = await Member.find({ userId: req.user._id });
 
         const teamIds = members.map((mm) => mm.teamId);
 
         const memberTeams = await Team.find({ _id: [...teamIds] });
 
-        teams = [...userTeams, ...memberTeams];
+        teams = [...memberTeams];
 
         console.log(teams);
 
@@ -42,7 +42,7 @@ module.exports = {
     },
     me: requireAuth.createResolver(
       async (root, { id }, { req, pubsub }, info) => {
-        return await User.findById(req.user._id);
+        return await User.findOne({ _id: req.user._id });
       },
     ),
   },

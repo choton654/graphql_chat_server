@@ -1,6 +1,9 @@
 import { PubSub, withFilter } from 'apollo-server-express';
 import mongoose from 'mongoose';
-import requireAuth from '../middleware/permission';
+import {
+  default as requireAuth,
+  requireTeamAccess,
+} from '../middleware/permission';
 import Message from '../models/message';
 import User from '../models/user';
 
@@ -11,12 +14,14 @@ const NEW_MESSAGE = 'NEW POST';
 module.exports = {
   Subscription: {
     newMessage: {
-      subscribe: withFilter(
-        () => pubSub.asyncIterator(NEW_MESSAGE),
-        (payload, args) => {
-          // console.log(payload, args);
-          return payload.channelId === args.channelId;
-        },
+      subscribe: requireTeamAccess.createResolver(
+        withFilter(
+          () => pubSub.asyncIterator(NEW_MESSAGE),
+          (payload, args) => {
+            // console.log(payload, args);
+            return payload.channelId === args.channelId;
+          },
+        ),
       ),
     },
   },

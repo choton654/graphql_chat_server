@@ -1,6 +1,10 @@
 import mongoose from 'mongoose';
 
 const teamSchema = new mongoose.Schema({
+  admin: {
+    type: Boolean,
+    default: false,
+  },
   name: {
     type: String,
     unique: true,

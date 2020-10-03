@@ -1,10 +1,11 @@
-import { gql } from 'apollo-server-express';
+import { gql } from "apollo-server-express";
 
 const typeDefs = gql`
   extend type Query {
     team(id: ID!): Team!
     allTeams: [Team!]!
     inviteTeams: [Team!]
+    getTeamMembers(teamId: ID!): [User!]!
   }
   extend type Mutation {
     createTeam(name: String!): TeamResponse!
@@ -25,7 +26,8 @@ const typeDefs = gql`
   type Team {
     id: ID!
     name: String!
-    admin: Boolean
+    admin: Boolean!
+    owner: ID!
     members: [User!]!
     channels: [Channel!]!
   }

@@ -1,6 +1,6 @@
-import requireAuth from '../middleware/permission';
-import Channel from '../models/channel';
-import Team from '../models/team';
+import requireAuth from "../middleware/permission";
+import Channel from "../models/channel";
+import Member from "../models/member";
 
 module.exports = {
   Query: {
@@ -11,18 +11,15 @@ module.exports = {
   Mutation: {
     createChannel: requireAuth.createResolver(
       async (root, args, { req }, info) => {
-        // console.log(req.user);
         try {
-          const team = await Team.findOne({ _id: args.teamId });
-          // console.log('team', team);
-          if (team.owner !== req.user._id) {
+          const member = await Member.findOne({ teamId });
+          if (!member.admin) {
             return {
               ok: false,
-              error: { error: 'You are not owner of the team' },
+              error: { error: "You are not owner of the team" },
             };
           }
           const channel = await Channel.create(args);
-          // console.log(channel);
           return {
             ok: true,
             channel,
@@ -34,7 +31,7 @@ module.exports = {
             error: error.message,
           };
         }
-      },
+      }
     ),
   },
 };

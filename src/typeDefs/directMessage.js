@@ -2,16 +2,17 @@ import { gql } from 'apollo-server-express';
 
 const typeDefs = gql`
   extend type Query {
-    directMessages: [DirectMessage!]!
+    directMessages(teamId: ID!, receiverId: ID!): [DirectMessage!]!
   }
   extend type Mutation {
-    createDirectMessage(reciverId: ID!, text: String!): Boolean!
+    createDirectMessage(receiverId: ID!, text: String!, teamId: ID!): Boolean!
   }
   type DirectMessage {
     id: ID!
     text: String!
     sender: User!
-    reciverId: ID!
+    receiverId: ID!
+    createdAt: String!
   }
 `;
 

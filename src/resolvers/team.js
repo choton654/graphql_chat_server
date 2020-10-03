@@ -1,46 +1,27 @@
-import mongoose from 'mongoose';
-import requireAuth from '../middleware/permission';
-import Channel from '../models/channel';
-import Member from '../models/member';
-import Team from '../models/team';
-import User from '../models/user';
+import requireAuth from "../middleware/permission";
+import Channel from "../models/channel";
+import Member from "../models/member";
+import Team from "../models/team";
+import User from "../models/user";
 
-const NEW_TEAM = 'NEW TEAM';
+const NEW_TEAM = "NEW TEAM";
 
 module.exports = {
   Query: {
-    allTeams: async (_, __, { req }) => {
-      try {
-        const teams = await Team.find({ owner: req.user._id });
-        return teams;
-      } catch (error) {
-        console.error(error);
-      }
-    },
-    inviteTeams: async (_, __, { req }) => {
-      // console.log(req.user);
-      try {
-        let teams;
-        const members = await Member.find({ userId: req.user._id });
+    getTeamMembers: requireAuth.createResolver(
+      async (parent, { teamId }, { req }) => {
+        try {
+          const members = await Member.find({ teamId });
+          const userIds = members.map((mm) => mm.userId);
 
-        console.log(members);
-        members.map((member) => {
-          teams = Team.find({ _id: member.teamId });
-          console.log(teams);
-          return teams;
-        });
-        return teams;
-      } catch (error) {
-        console.error(error);
-      }
-    },
-    team: (root, { id }, context, info) => {
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw Error('Team is not exists');
-      }
+          const usersInTeam = await User.find({ _id: userIds });
 
-      return Team.findById(id);
-    },
+          return usersInTeam;
+        } catch (error) {
+          console.error(error);
+        }
+      }
+    ),
   },
   Mutation: {
     addTeamMember: requireAuth.createResolver(
@@ -51,36 +32,28 @@ module.exports = {
             teamId,
             userId: req.user._id,
           });
-          const teamPromise = Team.findById(teamId);
-          const [member, userToAdd] = await Promise.all([
-            // teamPromise,
-            memberToPromise,
+          const teamPromise = Team.findOne({
+            _id: teamId,
+            owner: req.user._id,
+          });
+          const [team, userToAdd] = await Promise.all([
+            teamPromise,
+            // memberToPromise,
             userToAddPromise,
           ]);
-          if (!member.admin) {
+          if (!team.admin) {
             return {
               ok: false,
-              error: { error: 'You cannot add members to the team' },
+              error: { error: "You cannot add members to the team" },
             };
           }
           if (!userToAdd) {
             return {
               ok: false,
-              error: { error: 'Could not find user with this email' },
+              error: { error: "Could not find user with this email" },
             };
           }
-          // if (team.owner.toString() !== req.user._id.toString()) {
-          //   return {
-          //     ok: false,
-          //     error: { error: 'You cannot add members to the team' },
-          //   };
-          // }
-          // if (!teamPromise) {
-          //   return {
-          //     ok: false,
-          //     error: { error: 'Select team to add people' },
-          //   };
-          // }
+
           await Member.create({ userId: userToAdd._id, teamId });
           return {
             ok: true,
@@ -92,23 +65,20 @@ module.exports = {
             error: { error: error.message },
           };
         }
-      },
+      }
     ),
     createTeam: requireAuth.createResolver(
       async (root, args, { req, pubSub }, info) => {
+        console.log("team user", req.user);
         try {
           const team = await Team.create({
             name: args.name,
             owner: req.user._id,
+            admin: true,
           });
-          // pubSub.publish(NEW_TEAM, {
-          //   newTeam: team,
-          // });
-          // console.log('team', team);
           await Member.create({
             userId: req.user._id,
             teamId: team._id,
-            admin: true,
           });
           await Channel.create({
             name: `general`,
@@ -124,11 +94,11 @@ module.exports = {
           if (error.code === 11000) {
             return {
               ok: false,
-              error: { error: 'Team already exists' },
+              error: { error: "Team already exists" },
             };
           }
         }
-      },
+      }
     ),
   },
   Team: {
@@ -142,3 +112,50 @@ module.exports = {
     },
   },
 };
+
+// Query: {
+//   allTeams: async (_, __, { req }) => {
+//     try {
+//       const teams = await Team.find({ owner: req.user._id });
+//       return teams;
+//     } catch (error) {
+//       console.error(error);
+//     }
+//   },
+//   inviteTeams: async (_, __, { req }) => {
+//     // console.log(req.user);
+//     try {
+//       let teams;
+//       const members = await Member.find({ userId: req.user._id });
+
+//       console.log(members);
+//       members.map((member) => {
+//         teams = Team.find({ _id: member.teamId });
+//         console.log(teams);
+//         return teams;
+//       });
+//       return teams;
+//     } catch (error) {
+//       console.error(error);
+//     }
+//   },
+//   team: (root, { id }, context, info) => {
+//     if (!mongoose.Types.ObjectId.isValid(id)) {
+//       throw Error('Team is not exists');
+//     }
+
+//     return Team.findById(id);
+//   },
+// },
+// if (team.owner.toString() !== req.user._id.toString()) {
+//   return {
+//     ok: false,
+//     error: { error: 'You cannot add members to the team' },
+//   };
+// }
+// if (!teamPromise) {
+//   return {
+//     ok: false,
+//     error: { error: 'Select team to add people' },
+//   };
+// }

@@ -1,13 +1,13 @@
-import jwt from 'jsonwebtoken';
-import User from '../models/user';
+import jwt from "jsonwebtoken";
+import User from "../models/user";
 
 export const createTokens = async (user, refreshSecret) => {
   const createToken = jwt.sign({ user }, process.env.SECRET, {
-    expiresIn: '1hr',
+    expiresIn: "1hr",
   });
 
   const createRefreshtoken = jwt.sign({ user }, refreshSecret, {
-    expiresIn: '7d',
+    expiresIn: "7d",
   });
 
   return [createToken, createRefreshtoken];
@@ -17,8 +17,8 @@ export const refreshtokens = async (token, refreshtoken) => {
   let userId;
 
   try {
-    const { id } = jwt.decode(refreshtoken);
-    userId = id;
+    const { user } = jwt.decode(refreshtoken);
+    userId = user._id;
   } catch (error) {
     return {};
   }
@@ -28,6 +28,7 @@ export const refreshtokens = async (token, refreshtoken) => {
   }
 
   const user = await User.findById(userId);
+  console.log("refresh-user", user);
 
   if (!user) {
     return {};
@@ -51,19 +52,19 @@ export const refreshtokens = async (token, refreshtoken) => {
 };
 
 export const auth = async (req, res, next) => {
-  const token = req.headers['x-token'];
+  const token = req.headers["x-token"];
   if (token) {
     try {
       const { user } = jwt.verify(token, process.env.SECRET);
       req.user = user;
     } catch (error) {
       console.log(error);
-      const refreshtoken = req.headers['x-refresh-token'];
+      const refreshtoken = req.headers["x-refresh-token"];
       const newTokens = await refreshtokens(token, refreshtoken);
       if (newTokens.token && newTokens.refreshToken) {
-        res.set('Access-Control-Expose-Headers', 'x-token, x-refresh-token');
-        res.set('x-token', newTokens.token);
-        res.set('x-refresh-token', newTokens.refreshToken);
+        res.set("Access-Control-Expose-Headers", "x-token, x-refresh-token");
+        res.set("x-token", newTokens.token);
+        res.set("x-refresh-token", newTokens.refreshToken);
       }
       req.user = newTokens.user;
     }
