@@ -28,7 +28,7 @@ export const refreshtokens = async (token, refreshtoken) => {
   }
 
   const user = await User.findById(userId);
-  console.log("refresh-user", user);
+  // console.log("refresh-user", user);
 
   if (!user) {
     return {};

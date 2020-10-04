@@ -1,5 +1,6 @@
 import requireAuth from "../middleware/permission";
 import Channel from "../models/channel";
+import Directmessage from "../models/directMessage";
 import Member from "../models/member";
 import Team from "../models/team";
 import User from "../models/user";
@@ -103,6 +104,26 @@ module.exports = {
   },
   Team: {
     channels: ({ id }, args, context, info) => Channel.find({ teamId: id }),
+    directMessageMembers: async ({ id }, args, { req: { user } }) => {
+      console.log(id);
+      const directmessages = await Directmessage.find({
+        $and: [
+          { teamId: id },
+          { $or: [{ receiverId: user._id }, { senderId: user._id }] },
+        ],
+      });
+      const receiverIds = directmessages.map((dm) => dm.receiverId);
+      const senderIds = directmessages.map((dm) => dm.senderId);
+
+      const users = await User.find({
+        $or: [{ _id: [...receiverIds] }, { _id: [...senderIds] }],
+      });
+      const musers = users.filter(
+        (u) => u._id.toString() !== user._id.toString()
+      );
+
+      return musers;
+    },
   },
   Subscription: {
     newTeam: {

@@ -29,6 +29,7 @@ const typeDefs = gql`
     admin: Boolean!
     owner: ID!
     members: [User!]!
+    directMessageMembers: [User!]!
     channels: [Channel!]!
   }
 `;
