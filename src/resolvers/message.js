@@ -8,6 +8,8 @@ import {
 } from "../middleware/permission";
 import Message from "../models/message";
 import User from "../models/user";
+import Channel from "../models/channel";
+import PCMember from "../models/pcmember";
 
 const pubSub = new PubSub();
 
@@ -39,9 +41,22 @@ module.exports = {
   },
 
   Query: {
-    messages: requireAuth.createResolver((_, { channelId }, { req }, ___) => {
-      return Message.find({ channelId });
-    }),
+    messages: requireAuth.createResolver(
+      async (_, { channelId }, { req: { user } }, ___) => {
+        const channel = await Channel.findOne({ _id: channelId });
+
+        if (!channel.public) {
+          const member = await PCMember.findOne({
+            channelId,
+            userId: user._id,
+          });
+          if (!member) {
+            throw new Error("Not Authorized");
+          }
+        }
+        return Message.find({ channelId });
+      }
+    ),
     message: (root, { id }, context, info) => {
       if (!mongoose.Types.ObjectId.isValid(id)) {
         throw new Error("can't find post");
@@ -53,7 +68,7 @@ module.exports = {
   Mutation: {
     createMessage: requireAuth.createResolver(
       async (root, args, { req }, info) => {
-        console.log(args);
+        // console.log(args);
         try {
           const message = await Message.create({
             // ...messageData,

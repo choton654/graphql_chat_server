@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
 const userSchema = new mongoose.Schema(
   {
     username: {
@@ -11,17 +11,11 @@ const userSchema = new mongoose.Schema(
       unique: true,
     },
     password: String,
-    channelMember: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'channel',
-      },
-    ],
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
-userSchema.pre('save', async function (next) {
+userSchema.pre("save", async function (next) {
   try {
     const salt = await bcrypt.genSalt();
     this.password = await bcrypt.hash(this.password, salt);
@@ -32,6 +26,6 @@ userSchema.pre('save', async function (next) {
   }
 });
 
-const User = mongoose.models.user || mongoose.model('user', userSchema);
+const User = mongoose.models.user || mongoose.model("user", userSchema);
 
 module.exports = User;

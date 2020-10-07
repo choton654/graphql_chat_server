@@ -2,6 +2,7 @@ import requireAuth from "../middleware/permission";
 import Channel from "../models/channel";
 import Directmessage from "../models/directMessage";
 import Member from "../models/member";
+import PCMember from "../models/pcmember";
 import Team from "../models/team";
 import User from "../models/user";
 
@@ -102,7 +103,18 @@ module.exports = {
     ),
   },
   Team: {
-    channels: ({ id }, args, context, info) => Channel.find({ teamId: id }),
+    channels: async ({ id }, args, { req: { user } }, info) => {
+      const pcMembers = await PCMember.find({ userId: user._id });
+      const pChannelIds = pcMembers.map((pcm) => pcm.channelId);
+      const channels = await Channel.find({
+        $and: [
+          { teamId: id },
+          { $or: [{ public: true }, { _id: pChannelIds }] },
+        ],
+      });
+      // console.log(channels);
+      return channels;
+    },
     directMessageMembers: async ({ id }, args, { req: { user } }) => {
       const directmessages = await Directmessage.find({
         $and: [

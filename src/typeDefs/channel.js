@@ -1,4 +1,4 @@
-import { gql } from 'apollo-server-express';
+import { gql } from "apollo-server-express";
 
 const typeDefs = gql`
   extend type Query {
@@ -7,7 +7,12 @@ const typeDefs = gql`
   }
 
   extend type Mutation {
-    createChannel(teamId: ID!, name: String!, public: Boolean): ChannelResponse!
+    createChannel(
+      teamId: ID!
+      name: String!
+      public: Boolean = false
+      members: [ID!] = []
+    ): ChannelResponse!
   }
   type ChannelResponse {
     ok: Boolean!
