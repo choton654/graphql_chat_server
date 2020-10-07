@@ -1,9 +1,10 @@
-const { gql } = require('apollo-server-express');
+const { gql } = require("apollo-server-express");
 
 module.exports = gql`
   extend type Query {
     me: User!
     allUsers: [User!]!
+    getUser(userId: ID!): User
   }
   extend type Mutation {
     createUser(email: String!, username: String!, password: String!): User!

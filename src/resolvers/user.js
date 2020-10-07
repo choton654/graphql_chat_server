@@ -1,16 +1,16 @@
-const { UserInputError } = require('apollo-server-express');
-const mongoose = require('mongoose');
-const User = require('../models/user');
-import requireAuth from '../middleware/permission';
-import Member from '../models/member';
-import Team from '../models/team';
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
-const { signupSchema } = require('../validation/userValidation');
-const Joi = require('joi');
-const { createTokens } = require('../middleware/authMiddleware');
+const { UserInputError } = require("apollo-server-express");
+const mongoose = require("mongoose");
+const User = require("../models/user");
+import requireAuth from "../middleware/permission";
+import Member from "../models/member";
+import Team from "../models/team";
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+const { signupSchema } = require("../validation/userValidation");
+const Joi = require("joi");
+const { createTokens } = require("../middleware/authMiddleware");
 
-const NEW_USER = 'NEW_USER';
+const NEW_USER = "NEW_USER";
 
 const maxAge = 3 * 24 * 60 * 60;
 
@@ -28,7 +28,7 @@ module.exports = {
 
         teams = [...memberTeams];
 
-        console.log(teams);
+        // console.log(teams);
 
         return teams;
       } catch (error) {
@@ -43,8 +43,9 @@ module.exports = {
     me: requireAuth.createResolver(
       async (root, { id }, { req, pubsub }, info) => {
         return await User.findOne({ _id: req.user._id });
-      },
+      }
     ),
+    getUser: (_, { userId }, { req }) => User.findById(userId),
   },
   Mutation: {
     createUser: async (root, args, { res }, info) => {
@@ -56,7 +57,7 @@ module.exports = {
       let errors = [];
       const user = await User.findOne({ email });
       if (!user) {
-        errors.push({ error: 'wrong email' });
+        errors.push({ error: "wrong email" });
         console.log(errors);
         return {
           errors,
@@ -64,7 +65,7 @@ module.exports = {
       }
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
-        errors.push({ error: 'wrong password' });
+        errors.push({ error: "wrong password" });
         console.log(errors);
         return {
           errors,
@@ -74,7 +75,7 @@ module.exports = {
 
       const [newToken, newRefreshtoken] = await createTokens(
         user,
-        refreshSecret,
+        refreshSecret
       );
 
       return {

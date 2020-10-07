@@ -1,6 +1,9 @@
 import { ApolloServer, PubSub } from "apollo-server-express";
 import cookieParser from "cookie-parser";
 import express from "express";
+import { existsSync, mkdirSync } from "fs";
+// import { graphqlUploadExpress } from "graphql-upload";
+import path from "path";
 import http from "http";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
@@ -29,12 +32,16 @@ app.use(cookieParser());
 app.use(auth);
 
 app.disable("x-powered-by");
+// app.use(express.static("public"));
+existsSync(path.join(__dirname, "../images")) ||
+  mkdirSync(path.join(__dirname, "../images"));
 
 const pubSub = new PubSub();
-
+// app.use(graphqlUploadExpress({ maxFileSize: 1000000000, maxFiles: 10 }));
 const server = new ApolloServer({
   typeDefs,
   resolvers,
+  // uploads: true,
   context: async ({ req, res }) => ({ req, res }),
   subscriptions: {
     onConnect: async ({ token, refreshToken }, webSocket) => {
@@ -42,6 +49,7 @@ const server = new ApolloServer({
         let user;
         try {
           const payload = jwt.verify(token, process.env.SECRET);
+
           return { user: payload.user };
         } catch (error) {
           const newTokens = await refreshtokens(token, refreshToken);

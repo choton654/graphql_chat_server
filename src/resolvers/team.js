@@ -70,7 +70,6 @@ module.exports = {
     ),
     createTeam: requireAuth.createResolver(
       async (root, args, { req, pubSub }, info) => {
-        console.log("team user", req.user);
         try {
           const team = await Team.create({
             name: args.name,
@@ -105,7 +104,6 @@ module.exports = {
   Team: {
     channels: ({ id }, args, context, info) => Channel.find({ teamId: id }),
     directMessageMembers: async ({ id }, args, { req: { user } }) => {
-      console.log(id);
       const directmessages = await Directmessage.find({
         $and: [
           { teamId: id },
@@ -133,50 +131,3 @@ module.exports = {
     },
   },
 };
-
-// Query: {
-//   allTeams: async (_, __, { req }) => {
-//     try {
-//       const teams = await Team.find({ owner: req.user._id });
-//       return teams;
-//     } catch (error) {
-//       console.error(error);
-//     }
-//   },
-//   inviteTeams: async (_, __, { req }) => {
-//     // console.log(req.user);
-//     try {
-//       let teams;
-//       const members = await Member.find({ userId: req.user._id });
-
-//       console.log(members);
-//       members.map((member) => {
-//         teams = Team.find({ _id: member.teamId });
-//         console.log(teams);
-//         return teams;
-//       });
-//       return teams;
-//     } catch (error) {
-//       console.error(error);
-//     }
-//   },
-//   team: (root, { id }, context, info) => {
-//     if (!mongoose.Types.ObjectId.isValid(id)) {
-//       throw Error('Team is not exists');
-//     }
-
-//     return Team.findById(id);
-//   },
-// },
-// if (team.owner.toString() !== req.user._id.toString()) {
-//   return {
-//     ok: false,
-//     error: { error: 'You cannot add members to the team' },
-//   };
-// }
-// if (!teamPromise) {
-//   return {
-//     ok: false,
-//     error: { error: 'Select team to add people' },
-//   };
-// }

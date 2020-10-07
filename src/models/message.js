@@ -1,20 +1,22 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const messageSchema = new mongoose.Schema(
   {
     text: String,
+    url: String,
+    filetype: String,
     channelId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'channel',
+      ref: "channel",
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'user',
+      ref: "user",
     },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
-const Message = mongoose.model('message', messageSchema);
+const Message = mongoose.model("message", messageSchema);
 
 export default Message;
