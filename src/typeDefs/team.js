@@ -3,8 +3,8 @@ import { gql } from "apollo-server-express";
 const typeDefs = gql`
   extend type Query {
     team(id: ID!): Team!
-    allTeams: [Team!]!
-    inviteTeams: [Team!]
+    # allTeams: [Team!]!
+    # inviteTeams: [Team!]
     getTeamMembers(teamId: ID!): [User!]!
   }
   extend type Mutation {

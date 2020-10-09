@@ -42,7 +42,7 @@ module.exports = {
 
   Query: {
     messages: requireAuth.createResolver(
-      async (_, { channelId }, { req: { user } }, ___) => {
+      async (_, { offset, channelId }, { req: { user } }, ___) => {
         const channel = await Channel.findOne({ _id: channelId });
 
         if (!channel.public) {
@@ -54,7 +54,10 @@ module.exports = {
             throw new Error("Not Authorized");
           }
         }
-        return Message.find({ channelId });
+        return Message.find({ channelId })
+          .limit(10)
+          .skip(offset)
+          .sort({ createdAt: -1 });
       }
     ),
     message: (root, { id }, context, info) => {

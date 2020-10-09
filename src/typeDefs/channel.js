@@ -13,7 +13,13 @@ const typeDefs = gql`
       public: Boolean = false
       members: [ID!] = []
     ): ChannelResponse!
+    getOrCreateChannel(teamId: ID!, members: [ID!]!): DMChannelResponse!
   }
+  type DMChannelResponse {
+    id: ID!
+    name: String!
+  }
+
   type ChannelResponse {
     ok: Boolean!
     error: Error
@@ -26,6 +32,7 @@ const typeDefs = gql`
     public: Boolean!
     messages: [Message!]!
     users: [User!]!
+    dm: Boolean!
   }
 `;
 

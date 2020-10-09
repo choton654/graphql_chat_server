@@ -3,6 +3,7 @@ import Channel from "../models/channel";
 import Member from "../models/member";
 import PCMember from "../models/pcmember";
 import Team from "../models/team";
+import User from "../models/user";
 
 module.exports = {
   Query: {
@@ -11,6 +12,53 @@ module.exports = {
   },
 
   Mutation: {
+    getOrCreateChannel: requireAuth.createResolver(
+      async (parent, { teamId, members }, { req: { user } }) => {
+        const member = await Member.findOne({ teamId, userId: user._id });
+
+        if (!member) {
+          throw new Error("Not Authorized");
+        }
+
+        const allMembers = [...members, user._id];
+        // check if dm channel already exists with these members
+
+        const users = await User.find({
+          _id: members,
+        });
+
+        const name = users.map((u) => u.username).join(", ");
+
+        const channels = await Channel.find({
+          $and: [{ teamId }, { dm: true }, { public: false }, { name }],
+        });
+        console.log(channels);
+        if (channels.length) {
+          return {
+            id: channels._id,
+            name: channels.name,
+          };
+        }
+
+        const channel = await Channel.create({
+          name,
+          public: false,
+          dm: true,
+          teamId,
+        });
+        const cId = channel._id;
+        const pcmembers = allMembers.map((m) => ({
+          userId: m,
+          channelId: cId,
+        }));
+        await PCMember.create(pcmembers);
+
+        return {
+          id: cId,
+          name,
+        };
+      }
+    ),
     createChannel: requireAuth.createResolver(
       async (root, args, { req: { user } }, info) => {
         try {
@@ -22,7 +70,7 @@ module.exports = {
             };
           }
           const channel = await Channel.create(args);
-
+          // console.log(channel);
           if (!args.public) {
             const members = args.members.filter((m) => m !== user._id);
             members.push(user._id);

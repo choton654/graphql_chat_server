@@ -3,7 +3,7 @@ import { gql } from "apollo-server-express";
 const typeDefs = gql`
   extend type Query {
     message(id: ID!): Message
-    messages(channelId: ID!): [Message!]!
+    messages(offset: Int!, channelId: ID!): [Message!]!
     uploads: [File]
   }
   extend type Mutation {

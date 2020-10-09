@@ -11,12 +11,15 @@ const NEW_TEAM = "NEW TEAM";
 module.exports = {
   Query: {
     getTeamMembers: requireAuth.createResolver(
-      async (parent, { teamId }, { req }) => {
+      async (parent, { teamId }, { req: { user } }) => {
         try {
           const members = await Member.find({ teamId });
           const userIds = members.map((mm) => mm.userId);
+          const uteams = userIds.filter(
+            (ut) => ut.toString() !== user._id.toString()
+          );
 
-          const usersInTeam = await User.find({ _id: userIds });
+          const usersInTeam = await User.find({ _id: uteams });
 
           return usersInTeam;
         } catch (error) {

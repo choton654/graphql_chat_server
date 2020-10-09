@@ -3,7 +3,7 @@ import User from "../models/user";
 
 export const createTokens = async (user, refreshSecret) => {
   const createToken = jwt.sign({ user }, process.env.SECRET, {
-    expiresIn: "1hr",
+    expiresIn: "1h",
   });
 
   const createRefreshtoken = jwt.sign({ user }, refreshSecret, {
