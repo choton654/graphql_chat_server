@@ -1,8 +1,11 @@
 import jwt from "jsonwebtoken";
 import User from "../models/user";
 
+export const SECRET = "fdfsdfsd";
+export const SECRET2 = "sdfsdfsdffsdfasgsdf";
+
 export const createTokens = async (user, refreshSecret) => {
-  const createToken = jwt.sign({ user }, process.env.SECRET, {
+  const createToken = jwt.sign({ user }, SECRET, {
     expiresIn: "1h",
   });
 
@@ -34,7 +37,7 @@ export const refreshtokens = async (token, refreshtoken) => {
     return {};
   }
 
-  const refreshSecret = user.password + process.env.SECRET2;
+  const refreshSecret = user.password + SECRET2;
 
   try {
     jwt.verify(refreshtoken, refreshSecret);
@@ -55,7 +58,7 @@ export const auth = async (req, res, next) => {
   const token = req.headers["x-token"];
   if (token) {
     try {
-      const { user } = jwt.verify(token, process.env.SECRET);
+      const { user } = jwt.verify(token, SECRET);
       req.user = user;
     } catch (error) {
       console.log(error);
